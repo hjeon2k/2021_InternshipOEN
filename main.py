@@ -207,10 +207,10 @@ def quart_wave():
     global Seq_M, Seq_T, s
     global Mesh_z, Mesh_y, field_Z,field_Y, E
     global lambda0, theta0
-    lambda0, theta0 = 500, 0.0
+    lambda0, theta0 = 600, 0.0
     qSeq_M = np.array([5, 6])
     qSeq_T = np.array([lambda0/splev(lambda0, IndexFtn[m][0])/4 for m in qSeq_M])
-    num_pair = 3
+    num_pair = 32
 
     Seq_M, Seq_T = np.array([0]), np.array([0])
     for i in range(num_pair):
@@ -225,12 +225,12 @@ def quart_wave():
     field_Z = np.linspace(-500, sum(Seq_T), Mesh_z)
     field_Y = np.linspace(-500, 500, Mesh_y)
     E = np.zeros((len(field_Y), len(field_Z)), dtype=complex)
-
     title_layer = 'Stack of '
     for m in qSeq_M:
         title_layer += Dict_M[m] + '&'
     title_layer = title_layer[:-1] + ' with ' + str(num_pair) + ' times'
     cal_target(title_layer=title_layer)
+    title_layer = 'Wavelength(nm) : ' + str(lambda0) + '   Inc Angle(°) : ' + str(np.round(theta0 * 180 / np.pi)) + '\n' + title_layer
 
     M = np.array([np.identity(2), ]*Points)
     ky = np.sqrt(Ksq(Seq_M[0])) * np.sin(theta0)
@@ -248,7 +248,7 @@ def quart_wave():
     Lambda_nm = Lambda
     plt.plot(Lambda_nm, R, label='Reflectance')
     plt.plot(Lambda_nm, T, label='Transmittance')
-    plt.plot(Lambda_nm, Ab, label='Absorbance')
+    #plt.plot(Lambda_nm, Ab, label='Absorbance')
     plt.xlabel('Wavelength (nm)')
     plt.title(title_layer)
     plt.legend()
@@ -257,5 +257,5 @@ def quart_wave():
 
 
 #cal_target()
-cal_total()
+#cal_total()
 quart_wave()
