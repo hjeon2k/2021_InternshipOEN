@@ -3,7 +3,7 @@ Convergence Research Project : Nano optical layer structural design through deep
 
 ###1. Refraction & Transmission of specific layer
 
-![air_cupc_c60_air_RTA](https://user-images.githubusercontent.com/77601144/105927563-9618ef00-6087-11eb-8b6d-f20569919e68.png | width=900, height=300)
+![air_cupc_c60_air_RTA](https://user-images.githubusercontent.com/77601144/105927563-9618ef00-6087-11eb-8b6d-f20569919e68.png)
 
 
 ###2. View E field of specific lambda & inc angle
