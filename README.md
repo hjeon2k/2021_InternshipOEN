@@ -16,4 +16,4 @@ Convergence Research Project : Nano optical layer structural design through deep
 
 ###4. Bragg mirror (--updating to plot 2D graph of lambda & layer numbers)
 
-<img src=https://user-images.githubusercontent.com/77601144/105927676-d0828c00-6087-11eb-9ced-1bfb4511671b.png" width="400" height="250">
+<img src="https://user-images.githubusercontent.com/77601144/105927676-d0828c00-6087-11eb-9ced-1bfb4511671b.png" width="400" height="250">
