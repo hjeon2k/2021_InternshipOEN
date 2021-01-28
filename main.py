@@ -50,6 +50,21 @@ def Pm(q, d):
 def Im(q, q_next):
     return np.array([[(q + q_next) / q_next / 2, (q_next - q) / q_next / 2], [(q_next - q) / q_next / 2, (q + q_next) / q_next / 2]])
 '''
+
+# Layer conditions
+Seq_M = np.array([5, 1, 4, 6, 0])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
+Seq_T = np.array([0, 30, 100, 80, 500])  # 10~300nm : total thickness < 1000nm
+s = len(Seq_T)
+
+# Specific conditions
+Mesh_z = int((sum(Seq_T) + 500)/5 + 1)
+Mesh_y = int(1000/5 + 1)
+field_Z = np.linspace(-500, sum(Seq_T), Mesh_z)
+field_Y = np.linspace(-500, 500, Mesh_y)
+E = np.zeros((len(field_Y), len(field_Z)), dtype=complex)
+lambda0, theta0 = 500, np.pi*0  # target set
+
+# Spol
 def Lm(q, q_next, d):
     return np.array([[(q + q_next) / q_next / 2, (q_next - q) / q_next / 2], [(q_next - q) / q_next / 2, (q + q_next) / q_next / 2]]) @ np.diag([np.exp(j * q * d), np.exp(-j * q * d)])
 vLm = np.vectorize(Lm, otypes=[np.ndarray])
@@ -62,19 +77,6 @@ def main_title():
     title += Dict_M[Seq_M[0]]
     return title
 
-# Layer conditions
-Seq_M = np.array([0, 4, 3, 0])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
-Seq_T = np.array([0, 200, 200, 500])  # 10~300nm : total thickness < 1000nm
-s = len(Seq_T)
-
-# Specific conditions
-Mesh_z = int((sum(Seq_T) + 500)/10 + 1)
-Mesh_y = int(1000/10 + 1)
-field_Z = np.linspace(-500, sum(Seq_T), Mesh_z)
-field_Y = np.linspace(-500, 500, Mesh_y)
-E = np.zeros((len(field_Y), len(field_Z)), dtype=complex)
-lambda0, theta0 = 500, np.pi*0.232  # target set
-
 # Total inc angle, lambda
 def cal_total():
     M = np.array([np.identity(2), ]*len(Theta)*len(Lambda))
@@ -85,7 +87,7 @@ def cal_total():
         M = np.matmul(np.array(vLm(np.ravel(q), np.ravel(q_next), Seq_T[i]*(10**-9)).tolist()), M)
     M = np.reshape(M, (len(Theta)*Points, 4)).transpose()
     r, t = -M[2]/M[3], M[0]-M[1]*M[2]/M[3]
-    R, T = abs(r)**2, abs(t)**2
+    R, T = abs(r)**2, abs(r)**2  # Error
     r, t, R, T = np.reshape(r, (len(Theta), len(Lambda))), np.reshape(t, (len(Theta), len(Lambda))), np.reshape(R, (len(Theta), len(Lambda))), np.reshape(T, (len(Theta), len(Lambda)))
     Ab = np.full((len(Theta), len(Lambda)), 1.0) - R - T
     R, T, Ab = np.round(R, 10), np.round(T, 10), np.round(Ab, 10)
@@ -169,8 +171,13 @@ def cal_target(title_layer=''):
     Q[s-1] = np.sqrt(Ksq(Seq_M[s-1]) - np.square(ky))
     m = M[s-1]
     r, t = -m[1][0]/m[1][1], m[0][0]-m[0][1]*m[1][0]/m[1][1]
-    R, T = abs(r)**2, abs(t)**2
-    print('R : ', np.round(R, 2), '  T : ', np.round(T, 2), '  A : ', np.round(1-R-T,2))
+    if np.abs(ky)>0 :
+        R, T = abs(r)**2, (abs(t)**2) / splev(lambda0, IndexFtn[Seq_M[0]][0]) * splev(lambda0, IndexFtn[Seq_M[s-1]][0])*Q[s-1].real/ky
+    else:
+        R, T = abs(r) ** 2, (abs(t) ** 2) / splev(lambda0, IndexFtn[Seq_M[0]][0]) * splev(lambda0, IndexFtn[Seq_M[s - 1]][0])
+    print("Case of S-pol")
+    print('r : ', np.round(r, 3), '  t : ', np.round(t, 3))
+    print('R : ', np.round(R, 3), '  T : ', np.round(T, 3))
 
     A = (M @ np.array([[[1], [r]], ]*s)).reshape((s, 2))
     SetSpolE(ky, Q, A, Y=field_Y, Z=field_Z)
@@ -240,7 +247,7 @@ def quart_wave():
         M = np.matmul(np.array(vLm(np.ravel(q), np.ravel(q_next), Seq_T[i]*(10**-9)).tolist()), M)
     M = np.reshape(M, (Points, 4)).transpose()
     r, t = -M[2]/M[3], M[0]-M[1]*M[2]/M[3]
-    R, T = abs(r)**2, abs(t)**2
+    R, T = abs(r)**2, abs(t)**2  # Error
     Ab = 1 - R - T
     R, T, Ab = np.round(R, 10), np.round(T, 10), np.round(Ab, 10)
 
@@ -255,7 +262,36 @@ def quart_wave():
     plt.grid()
     plt.show()
 
+# P-pol calculation
+def pLm(q, c, c_next, d):
+    return np.array([[(c + c_next) / c_next / 2, (c_next - c) / c_next / 2], [(c_next - c) / c_next / 2, (c + c_next) / c_next / 2]]) @ np.diag([np.exp(j * q * d), np.exp(-j * q * d)])
+vpLm = np.vectorize(pLm, otypes=[np.ndarray])
 
-#cal_target()
+def Pcal_target(title_layer=''):
+    M = np.zeros((s, 2, 2), dtype=complex)
+    M[0] = np.identity(2)
+    ky = np.sqrt(Ksq(Seq_M[0])) * np.sin(theta0)
+    Q = np.zeros(s, dtype=complex)
+    for i in range(s-1):
+        q = np.sqrt(Ksq(Seq_M[i]) - np.square(ky))
+        q_next = np.sqrt(Ksq(Seq_M[i+1]) - np.square(ky))
+        c = q / np.square(splev(lambda0, IndexFtn[Seq_M[i]][0]) + j*splev(lambda0, IndexFtn[Seq_M[i]][1]))
+        c_next = q_next / np.square(splev(lambda0, IndexFtn[Seq_M[i+1]][0]) + j*splev(lambda0, IndexFtn[Seq_M[i+1]][1]))
+        M[i+1] = pLm(q, c, c_next, Seq_T[i]*(10**-9)) @ M[i]
+        Q[i] = q
+    Q[s-1] = np.sqrt(Ksq(Seq_M[s-1]) - np.square(ky))
+    m = M[s-1]
+    r, t = -m[1][0]/m[1][1], m[0][0]-m[0][1]*m[1][0]/m[1][1]
+    if abs(ky)>0 :
+        R, T = abs(r)**2, (abs(t)**2)*splev(lambda0, IndexFtn[Seq_M[0]][0])/splev(lambda0, IndexFtn[Seq_M[s-1]][0])*Q[s-1].real/ky
+    else:
+        R, T = abs(r) ** 2, (abs(t) ** 2) * splev(lambda0, IndexFtn[Seq_M[0]][0]) / splev(lambda0, IndexFtn[Seq_M[s - 1]][0])
+    print("Case of P-pol")
+    print('r : ', np.round(r, 3), '  t : ', np.round(t, 3))
+    print('R : ', np.round(R, 3), '  T : ', np.round(T, 3))
+
+
+cal_target()
+Pcal_target()
 #cal_total()
-quart_wave()
+#quart_wave()
