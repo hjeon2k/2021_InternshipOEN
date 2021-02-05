@@ -52,8 +52,8 @@ def Im(q, q_next):
 '''
 
 # Layer conditions
-Seq_M = np.array([5, 1, 4, 6, 0])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
-Seq_T = np.array([0, 30, 100, 80, 500])  # 10~300nm : total thickness < 1000nm
+Seq_M = np.array([0, 5, 6, 5, 6, 0])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
+Seq_T = np.array([0, 40, 61, 67, 46, 500])  # 10~300nm : total thickness < 1000nm
 s = len(Seq_T)
 
 # Specific conditions
@@ -62,7 +62,7 @@ Mesh_y = int(1000/5 + 1)
 field_Z = np.linspace(-500, sum(Seq_T), Mesh_z)
 field_Y = np.linspace(-500, 500, Mesh_y)
 E = np.zeros((len(field_Y), len(field_Z)), dtype=complex)
-lambda0, theta0 = 500, np.pi*0  # target set
+lambda0, theta0 = 400, np.pi*0  # target set
 
 # Spol
 def Lm(q, q_next, d):
@@ -74,7 +74,7 @@ def main_title():
     title += Dict_M[Seq_M[0]] + '/ '
     for i in range(1, s-1):
         title += Dict_M[Seq_M[i]] + '(' + str(Seq_T[i]) + 'nm) / '
-    title += Dict_M[Seq_M[0]]
+    title += Dict_M[Seq_M[s-1]]
     return title
 
 # Total inc angle, lambda
@@ -167,6 +167,7 @@ def cal_target(title_layer=''):
         q = np.sqrt(Ksq(Seq_M[i]) - np.square(ky))
         q_next = np.sqrt(Ksq(Seq_M[i+1]) - np.square(ky))
         M[i+1] = Lm(q, q_next, Seq_T[i]*(10**-9)) @ M[i]
+        print(q, q_next, Seq_T[i] * (10 ** -9))
         Q[i] = q
     Q[s-1] = np.sqrt(Ksq(Seq_M[s-1]) - np.square(ky))
     m = M[s-1]
@@ -292,6 +293,6 @@ def Pcal_target(title_layer=''):
 
 
 cal_target()
-Pcal_target()
+#Pcal_target()
 #cal_total()
 #quart_wave()
