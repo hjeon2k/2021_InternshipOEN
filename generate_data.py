@@ -40,12 +40,14 @@ REP = 8
 Data_num = 5000
 def layer_set(set_M=Set_M, rep=REP, data_num=Data_num):
     set_num = len(set_M)
-    Set_T = np.array(np.random.choice(np.arange(40, 70), set_num*rep*data_num)).reshape(data_num, set_num*rep)
+    Set_T = np.array(np.random.choice(np.arange(40, 200), set_num*rep*data_num)).reshape(data_num, set_num*rep)
     return Set_T
 
 def Lm(q, q_next, d):
-    D = np.multiply(np.eye(2), np.array([np.exp(j * np.outer(q,d).ravel()), np.exp(-j * np.outer(q,d).ravel())]).swapaxes(0,1)[:, np.newaxis]).reshape(Data_num, Points, 2, 2)
     Q = np.array([np.array([[(q + q_next) / q_next / 2, (q_next - q) / q_next / 2], [(q_next - q) / q_next / 2, (q + q_next) / q_next / 2]]).swapaxes(0,2), ]*Data_num)
+    D = np.multiply(np.eye(2),
+                    np.array([np.exp(j * np.outer(q, d).ravel()), np.exp(-j * np.outer(q, d).ravel())]).swapaxes(0, 1)[
+                    :, np.newaxis]).reshape(Data_num, Points, 2, 2)
     return Q @ D
 vLm = np.vectorize(Lm, otypes=[np.ndarray])
 
@@ -64,10 +66,15 @@ def cal_total():
     M = np.matmul(Lm(np.ravel([q]), np.ravel([q_next]), np.ravel(Set_T.transpose()[set_num*REP-1]*(10**-9))), M)
     M = np.reshape(M, (Data_num*Points, 4)).transpose()
     r, t = -M[2]/M[3], M[0]-M[1]*M[2]/M[3]
-    R, T = abs(r)**2, abs(t)**2  # Error
-    r, t, R, T = np.reshape(r, (Data_num, Points)), np.reshape(t, (Data_num, Points)), np.reshape(R, (Data_num, Points)), np.reshape(T, (Data_num, Points))
-    Ab = np.full((Data_num, Points), 1.0) - R - T
-    R, T, Ab = np.round(R, 10), np.round(T, 10), np.round(Ab, 10)
-
+    R, T = np.reshape(abs(r)**2, (Points, Data_num)).transpose(), np.reshape(abs(t)**2, (Points, Data_num)).transpose()
+    #r, t = np.reshape(r, (Points, Data_num)).transpose(), np.reshape(t, (Points, Data_num)).transpose()
+    #Ab = np.full((Data_num, Points), 1.0) - R - T
+    T = np.round(T, 4)
+    savecol = ''
+    for i in range(set_num*REP):
+        savecol += 'L'+str(i//set_num+1)+'_'+str(i%set_num+1) + ','
+    savecol += 'wavelength,T'
+    save = np.concatenate((np.repeat(Set_T, Points, axis=0), np.array([Lambda, ] * Data_num).reshape((Points * Data_num, 1)), np.ravel(T).reshape((Points * Data_num, 1))), axis=1)
+    #np.savetxt("save.csv", save, header=savecol, delimiter=',')
 
 cal_total()

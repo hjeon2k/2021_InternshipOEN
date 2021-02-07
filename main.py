@@ -52,8 +52,8 @@ def Im(q, q_next):
 '''
 
 # Layer conditions
-Seq_M = np.array([0, 5, 6, 5, 6, 0])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
-Seq_T = np.array([0, 40, 61, 67, 46, 500])  # 10~300nm : total thickness < 1000nm
+Seq_M = np.array([0, 5, 6, 5, 6, 5, 6, 5, 6,5, 6, 5, 6,5, 6, 5, 6,0])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
+Seq_T = np.array([0, 127, 131,  79, 195, 126, 166, 174, 185,  44, 195, 138,  64,  56, 160, 194,  87, 500])  # 10~300nm : total thickness < 1000nm
 s = len(Seq_T)
 
 # Specific conditions
@@ -62,7 +62,7 @@ Mesh_y = int(1000/5 + 1)
 field_Z = np.linspace(-500, sum(Seq_T), Mesh_z)
 field_Y = np.linspace(-500, 500, Mesh_y)
 E = np.zeros((len(field_Y), len(field_Z)), dtype=complex)
-lambda0, theta0 = 400, np.pi*0  # target set
+lambda0, theta0 = 402, np.pi*0  # target set
 
 # Spol
 def Lm(q, q_next, d):
@@ -168,6 +168,7 @@ def cal_target(title_layer=''):
         q_next = np.sqrt(Ksq(Seq_M[i+1]) - np.square(ky))
         M[i+1] = Lm(q, q_next, Seq_T[i]*(10**-9)) @ M[i]
         print(q, q_next, Seq_T[i] * (10 ** -9))
+        print(np.round(M, 2))
         Q[i] = q
     Q[s-1] = np.sqrt(Ksq(Seq_M[s-1]) - np.square(ky))
     m = M[s-1]
