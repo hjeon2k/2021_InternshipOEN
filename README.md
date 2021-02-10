@@ -18,4 +18,4 @@ Convergence Research Project : Nano optical layer structural design through deep
 
 #2. Modeling DNN of predicting Transmittance
 
-<img src="https://user-images.githubusercontent.com/77601144/107468911-2b4dd480-6bac-11eb-8adc-7c9693b78cd1.PNG">
+<img src="https://user-images.githubusercontent.com/77601144/107468911-2b4dd480-6bac-11eb-8adc-7c9693b78cd1.PNG" width="600" height="200">
