@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 from scipy.interpolate import splrep, splev
+import matplotlib.pyplot as plt
 
 
 # Material Data
@@ -36,8 +37,8 @@ for i in range(7):
 # Layer conditions
 Set_M = np.array([5, 6])  # 0~6 : vacuum, ag, alq3, c60, cupc, sio2, sinx
 set_num = len(Set_M)
-REP = 8
-Data_num = 5000
+REP = 4
+Data_num = 50000
 def layer_set(set_M=Set_M, rep=REP, data_num=Data_num):
     set_num = len(set_M)
     Set_T = np.array(np.random.choice(np.arange(40, 200), set_num*rep*data_num)).reshape(data_num, set_num*rep)
@@ -70,11 +71,17 @@ def cal_total():
     #r, t = np.reshape(r, (Points, Data_num)).transpose(), np.reshape(t, (Points, Data_num)).transpose()
     #Ab = np.full((Data_num, Points), 1.0) - R - T
     T = np.round(T, 4)
-    savecol = ''
+
+    savexcol = ''
     for i in range(set_num*REP):
-        savecol += 'L'+str(i//set_num+1)+'_'+str(i%set_num+1) + ','
-    savecol += 'wavelength,T'
-    save = np.concatenate((np.repeat(Set_T, Points, axis=0), np.array([Lambda, ] * Data_num).reshape((Points * Data_num, 1)), np.ravel(T).reshape((Points * Data_num, 1))), axis=1)
-    #np.savetxt("save.csv", save, header=savecol, delimiter=',')
+        savexcol += 'L'+str(i//set_num+1)+'_'+str(i%set_num+1) + ','
+    savexcol = savexcol[:-1]
+    saveycol = [",".join(wavelength) for wavelength in [Lambda.astype(str)]][0]
+
+    np.savetxt("savex.csv", Set_T, header=savexcol, fmt='%f', delimiter=',')
+    np.savetxt("savey.csv", T, header=saveycol,  fmt="%f", delimiter=",")
+
+def cal_test():
+    pass
 
 cal_total()
