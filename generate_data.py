@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import splrep, splev
 import matplotlib.pyplot as plt
-
+import time
 
 # Material Data
 Dict_M = ['Air','Ag','Alq3','C60','CuPC','SiO2','SiNx']
@@ -52,7 +52,7 @@ def Lm(q, q_next, d):
     return Q @ D
 vLm = np.vectorize(Lm, otypes=[np.ndarray])
 
-def cal_total():
+def gen_dataset():
     Set_T = layer_set()
     M = np.array([np.identity(2), ]*Data_num*Points).reshape(Data_num, Points, 2, 2)
     q = np.sqrt(np.array(Ksquare[0]))
@@ -78,10 +78,22 @@ def cal_total():
     savexcol = savexcol[:-1]
     saveycol = [",".join(wavelength) for wavelength in [Lambda.astype(str)]][0]
 
-    np.savetxt("savex.csv", Set_T, header=savexcol, fmt='%f', delimiter=',')
-    np.savetxt("savey.csv", T, header=saveycol,  fmt="%f", delimiter=",")
+    np.savetxt("saveL.csv", Set_T, header=savexcol, fmt='%f', delimiter=',')
+    np.savetxt("saveT.csv", T, header=saveycol,  fmt="%f", delimiter=",")
 
-def cal_test():
-    pass
+    #np.savetxt("RTtest_L.csv", Set_T, header=savexcol, fmt='%f', delimiter=',')
+    #np.savetxt("RTtest_T.csv", T, header=saveycol,  fmt="%f", delimiter=",")
 
-cal_total()
+def gen_input():
+    savexcol = ''
+    for i in range(set_num*REP):
+        savexcol += 'L'+str(i//set_num+1)+'_'+str(i%set_num+1) + ','
+    savexcol = savexcol[:-1]
+    input_set = layer_set(data_num=50000)
+    np.savetxt("testLtoT_RT.csv", input_set, header=savexcol, fmt='%f', delimiter=',')
+
+start = time.time()
+gen_dataset()
+#gen_input()
+end = time.time()
+print(np.round(end-start))
